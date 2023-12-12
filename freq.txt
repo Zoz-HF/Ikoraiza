@@ -1,0 +1,48 @@
+import numpy as np
+
+from classes.functions import *
+import pyqtgraph as pg
+
+
+class FrequencyDomain:
+    def __init__(self, input_spectro_pointer=None, output_spectro_pointer=None, frequency_graph=None):
+        if input_spectro_pointer is not None:
+            self.input_spectro = input_spectro_pointer
+            self.output_spectro = output_spectro_pointer
+            self.frequency_graph = frequency_graph
+            self.frequency_graph.setBackground("w")
+            self.frequency_signal = pg.PlotCurveItem()
+            self.clear()
+
+
+
+    def add_new_file(self, input_data, sampling_rate, input_path):
+        self.input_data = input_data
+        self.sampling_rate = sampling_rate
+        self.number_of_samples = len(self.input_data)
+        self.frequencies, self.amplitudes = get_fourier_transform(self.input_data, self.number_of_samples,
+                                                                  1 / self.sampling_rate)
+        self.output_amplitudes = self.amplitudes.copy()
+
+        self.frequency_signal.setData(self.frequencies, abs(self.amplitudes) / self.number_of_samples, pen="b")
+        spectro_gram(input_path, self.input_figure, self.input_canvas, "input")
+
+    def update_output_spectrogram(self, output_path):
+        spectro_gram(output_path, self.output_figure, self.output_canvas, "output")
+
+    def clear(self):
+        self.frequencies = None
+        self.amplitudes = None
+        self.frequency_signal.setData()
+        self.frequency_graph.clear()
+        self.frequency_graph.addItem(self.frequency_signal)
+        self.input_data = []
+        self.sampling_rate = None
+        self.number_of_samples = None
+        self.frequencies = []
+        self.amplitudes = []
+        self.output_data = []
+        self.output_amplitudes = []
+        self.input_figure, self.input_canvas = create_figure(self.input_spectro)
+        self.output_figure, self.output_canvas = create_figure(self.output_spectro)
+
